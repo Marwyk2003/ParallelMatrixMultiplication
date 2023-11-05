@@ -5,11 +5,10 @@
 #include <omp.h>
 
 using namespace std;
+using namespace chrono;
 
-// #define MAX_DEPTH 2 // |threads| = 4*depth
-#define MIN_SIZE 32 // off
-
-int t;
+#define THREAD_NUM 16
+#define MIN_SIZE 32
 
 struct Matrix
 {
@@ -43,7 +42,7 @@ void strassen(Matrix &A, Matrix &B, Matrix &C, int size)
                 int prod = 0;
                 for (int k = 0; k < size; ++k)
                     prod += A(k, y) * B(x, k);
-                C(x, y) = prod;
+                C(x, y) += prod;
             }
         }
     }
@@ -57,47 +56,27 @@ void strassen(Matrix &A, Matrix &B, Matrix &C, int size)
         Matrix C11, C12, C21, C22;
         C.partition(C11, C12, C21, C22, nsize);
 
-        Matrix T{new int[size * size], size, 0, 0};
-        for (int y = 0; y < size; ++y)
-            for (int x = 0; x < size; ++x)
-                T(x, y) = 0;
-        Matrix T11, T12, T21, T22;
-        T.partition(T11, T12, T21, T22, nsize);
 #pragma omp task
         {
             strassen(A11, B11, C11, nsize);
-            strassen(A12, B21, T11, nsize);
-            for (int y = 0; y < size; ++y)
-                for (int x = 0; x < size; ++x)
-                    C(x, y) += T(x, y);
+            strassen(A12, B21, C11, nsize);
         }
 #pragma omp task
         {
             strassen(A11, B12, C12, nsize);
-            strassen(A12, B22, T12, nsize);
-            for (int y = 0; y < size; ++y)
-                for (int x = 0; x < size; ++x)
-                    C(x, y) += T(x, y);
+            strassen(A12, B22, C12, nsize);
         }
 #pragma omp task
         {
             strassen(A21, B11, C21, nsize);
-            strassen(A22, B21, T21, nsize);
-            for (int y = 0; y < size; ++y)
-                for (int x = 0; x < size; ++x)
-                    C(x, y) += T(x, y);
+            strassen(A22, B21, C21, nsize);
         }
 #pragma omp task
         {
             strassen(A21, B12, C22, nsize);
-            strassen(A22, B22, T22, nsize);
-            for (int y = 0; y < size; ++y)
-                for (int x = 0; x < size; ++x)
-                    C(x, y) += T(x, y);
+            strassen(A22, B22, C22, nsize);
         }
-
 #pragma omp taskwait
-        delete[] T.M;
     }
 }
 
@@ -142,9 +121,9 @@ int main()
             C(x, y) = 0;
     }
 
-    double startParStrassen = omp_get_wtime();
-    int **prod;
-    omp_set_num_threads(8);
+    auto t1 = high_resolution_clock::now();
+    omp_set_num_threads(THREAD_NUM);
+
 #pragma omp parallel
     {
 #pragma omp single
@@ -153,9 +132,16 @@ int main()
         }
     }
 
-    double endParStrassen = omp_get_wtime();
-    cerr << "\nParallel Strassen Runtime (OMP): ";
-    cerr << setprecision(5) << endParStrassen - startParStrassen << endl;
+    auto t2 = high_resolution_clock::now();
+    duration<double, std::milli> time = t2 - t1;
+    cerr << time.count() << '\n';
+
+    for (int y = 0; y < n; ++y)
+    {
+        for (int x = 0; x < n; ++x)
+            cout << C(x, y) << ' ';
+        cout << '\n';
+    }
 
     delete[] A.M;
     delete[] B.M;

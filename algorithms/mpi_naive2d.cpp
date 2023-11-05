@@ -1,5 +1,7 @@
 #include <bits/stdc++.h>
+
 using namespace std;
+using namespace chrono;
 
 #define THREAD_NUM 16
 
@@ -20,6 +22,8 @@ int main()
         for (int j = 0; j < n; ++j)
             cin >> B[j][i];
 
+    auto t1 = high_resolution_clock::now();
+
     thread threads[THREAD_NUM];
     for (int t = 0; t < THREAD_NUM; ++t)
     {
@@ -36,6 +40,10 @@ int main()
     }
     for (int t = 0; t < THREAD_NUM; ++t)
         threads[t].join();
+
+    auto t2 = high_resolution_clock::now();
+    duration<double, milli> time = t2 - t1;
+    cerr << time.count() << '\n';
 
     for (int i = 0; i < n; ++i)
     {
