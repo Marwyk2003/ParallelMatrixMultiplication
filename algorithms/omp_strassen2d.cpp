@@ -1,5 +1,4 @@
 // inspired by: https://github.com/spectre900/Parallel-Strassen-Algorithm/blob/master/omp_strassen.cpp
-// struct 1d strassen
 
 #include <bits/stdc++.h>
 #include <omp.h>
@@ -10,77 +9,57 @@ using namespace chrono;
 #define THREAD_NUM 16
 #define MIN_SIZE 32
 
-struct Matrix
+int **alloc2d(int *M1, int size)
 {
-    int **M;
-    int size;
-
-    Matrix() {}
-
-    Matrix(int **M1, int bx, int by, int s)
-    {
-        size = s;
-        M = new int *[size];
-        for (int i = 0; i < size; ++i)
-            M[i] = M1[i + by] + bx;
-    }
-
-    Matrix(int *M1, int s)
-    {
-        size = s;
-        M = new int *[size];
-        for (int i = 0; i < size; ++i)
-            M[i] = M1 + i * size;
-    }
-
-    void partition(Matrix &A11, Matrix &A12, Matrix &A21, Matrix &A22)
-    {
-        int s = size / 2;
-        A11 = Matrix(M, 0, 0, s);
-        A12 = Matrix(M, s, 0, s);
-        A21 = Matrix(M, 0, s, s);
-        A22 = Matrix(M, s, s, s);
-    }
-
-    int &operator()(int x, int y)
-    {
-        return M[y][x];
-    }
-
-};
-
-void freePart(Matrix &A11, Matrix &A12, Matrix &A21, Matrix &A22)
-{
-    delete[] A11.M;
-    delete[] A12.M;
-    delete[] A21.M;
-    delete[] A22.M;
+    int **M = new int *[size];
+    for (int i = 0; i < size; ++i)
+        M[i] = M1 + i * size;
+    return M;
 }
 
-void strassen(Matrix &A, Matrix &B, Matrix &C, int size)
+int **offset(int **M1, int ox, int oy, int size)
+{
+    int **M = new int *[size];
+    for (int i = 0; i < size; ++i)
+        M[i] = M1[i + oy] + ox;
+    return M;
+}
+
+void freePart(int** A11, int** A12, int** A21, int** A22)
+{
+    delete[] A11;
+    delete[] A12;
+    delete[] A21;
+    delete[] A22;
+}
+
+tuple<int **, int **, int **, int **> partition(int **M, int s)
+{
+    return {offset(M, 0, 0, s), offset(M, s, 0, s), offset(M, 0, s, s), offset(M, s, s, s)};
+}
+
+void strassen(int **A, int **B, int **C, int size)
 {
     if (size <= MIN_SIZE)
     {
+#pragma omp parallel for collapse(2)
         for (int y = 0; y < size; ++y)
         {
             for (int x = 0; x < size; ++x)
             {
                 int prod = 0;
                 for (int k = 0; k < size; ++k)
-                    prod += A(k, y) * B(x, k);
-                C(x, y) += prod;
+                    prod += A[y][k] * B[k][x];
+                C[y][x] += prod;
             }
         }
     }
     else
     {
         int nsize = size / 2;
-        Matrix A11, A12, A21, A22;
-        A.partition(A11, A12, A21, A22);
-        Matrix B11, B12, B21, B22;
-        B.partition(B11, B12, B21, B22);
-        Matrix C11, C12, C21, C22;
-        C.partition(C11, C12, C21, C22);
+        const auto &[A11, A12, A21, A22] = partition(A, nsize);
+        const auto &[B11, B12, B21, B22] = partition(B, nsize);
+        const auto &[C11, C12, C21, C22] = partition(C, nsize);
 
 #pragma omp task
         {
@@ -126,34 +105,30 @@ int main()
     int *Barr = new int[p2 * p2];
     int *Carr = new int[p2 * p2];
 
-    Matrix A(Aarr, p2);
-    Matrix B(Barr, p2);
-    Matrix C(Carr, p2);
+    int **A = alloc2d(Aarr, p2);
+    int **B = alloc2d(Barr, p2);
+    int **C = alloc2d(Carr, p2);
 
     for (int y = 0; y < n; ++y)
     {
         for (int x = 0; x < n; ++x)
-            cin >> A(x, y);
+            cin >> A[y][x];
         for (int x = p2; x < p2; ++x)
-            A(x, y) = 0;
+            A[y][x] = 0;
     }
     for (int y = 0; y < n; ++y)
     {
         for (int x = 0; x < n; ++x)
-            cin >> B(x, y);
+            cin >> B[y][x];
         for (int x = p2; x < p2; ++x)
-            B(x, y) = 0;
+            B[y][x] = 0;
     }
     for (int y = n; y < p2; ++y)
-    {
         for (int x = 0; x < p2; ++x)
-            A(x, y) = 0, B(x, y) = 0;
-    }
+            A[y][x] = 0, B[y][x] = 0;
     for (int y = 0; y < p2; ++y)
-    {
         for (int x = 0; x < p2; ++x)
-            C(x, y) = 0;
-    }
+            C[y][x] = 0;
 
     auto t1 = high_resolution_clock::now();
     omp_set_num_threads(THREAD_NUM);
@@ -173,13 +148,13 @@ int main()
     for (int y = 0; y < n; ++y)
     {
         for (int x = 0; x < n; ++x)
-            cout << C(x, y) << ' ';
+            cout << C[y][x] << ' ';
         cout << '\n';
     }
 
-    delete[] A.M;
-    delete[] B.M;
-    delete[] C.M;
+    delete[] A;
+    delete[] B;
+    delete[] C;
     delete[] Aarr;
     delete[] Barr;
     delete[] Carr;
