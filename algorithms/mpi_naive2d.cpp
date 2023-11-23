@@ -1,9 +1,8 @@
 #include <bits/stdc++.h>
+#include "env.h"
 
 using namespace std;
 using namespace chrono;
-
-#define THREAD_NUM 16
 
 int main()
 {

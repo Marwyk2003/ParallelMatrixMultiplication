@@ -1,12 +1,10 @@
 // inspired by: https://github.com/spectre900/Parallel-Strassen-Algorithm/blob/master/omp_strassen.cpp
 #include <bits/stdc++.h>
 #include <omp.h>
+#include "env.h"
 
 using namespace std;
 using namespace chrono;
-
-#define THREAD_NUM 16
-#define MIN_SIZE 32
 
 int **alloc2d(int *M1, int size)
 {

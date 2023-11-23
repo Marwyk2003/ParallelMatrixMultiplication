@@ -1,10 +1,8 @@
 #include <bits/stdc++.h>
+#include "env.h"
 
 using namespace std;
 using namespace chrono;
-
-#define MIN_SIZE 64
-#define MAX_DEPTH 3
 
 int **alloc2d(int *M1, int size)
 {
@@ -22,7 +20,7 @@ int **offset(int **M1, int ox, int oy, int size)
     return M;
 }
 
-void freePart(int** A11, int** A12, int** A21, int** A22)
+void freePart(int **A11, int **A12, int **A21, int **A22)
 {
     delete[] A11;
     delete[] A12;
@@ -35,7 +33,7 @@ tuple<int **, int **, int **, int **> partition(int **M, int s)
     return {offset(M, 0, 0, s), offset(M, s, 0, s), offset(M, 0, s, s), offset(M, s, s, s)};
 }
 
-void strassen(int **A, int **B, int **C, int size, int depth=0)
+void strassen(int **A, int **B, int **C, int size, int depth = 0)
 {
     if (size <= MIN_SIZE || depth > MAX_DEPTH)
     {
@@ -118,7 +116,7 @@ int main()
             C[y][x] = 0;
 
     auto t1 = high_resolution_clock::now();
-    
+
     strassen(A, B, C, p2);
 
     auto t2 = high_resolution_clock::now();

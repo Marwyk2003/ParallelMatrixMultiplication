@@ -2,12 +2,10 @@
 
 #include <bits/stdc++.h>
 #include <omp.h>
+#include "env.h"
 
 using namespace std;
 using namespace chrono;
-
-#define THREAD_NUM 16
-#define MIN_SIZE 32
 
 int **alloc2d(int *M1, int size)
 {
@@ -49,7 +47,7 @@ void strassen(int **A, int **B, int **C, int size)
             {
                 int prod = 0;
                 for (int k = 0; k < size; ++k)
-                    prod += A[y][k] * B[k][x];
+                    prod += A[y][k] * B[x][k];
                 C[y][x] += prod;
             }
         }
