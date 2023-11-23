@@ -1,4 +1,0 @@
-mpi_naive1d.cpp
-mpi_naive2d.cpp
-omp_strassen1d.cpp
-omp_strassen2d.cpp

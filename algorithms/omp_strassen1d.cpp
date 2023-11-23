@@ -1,5 +1,4 @@
 // inspired by: https://github.com/spectre900/Parallel-Strassen-Algorithm/blob/master/omp_strassen.cpp
-// struct 1d strassen
 
 #include <bits/stdc++.h>
 #include <omp.h>

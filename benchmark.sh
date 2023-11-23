@@ -1,9 +1,10 @@
 #/usr/bin/sh
 
-cat algorithms/benchmark.txt | while read file; do
+# cat algorithms/benchmark.txt | while read file; do
+for file in algorithms/*.cpp; do
     bin=$(basename ${file%.*})
     echo "$bin:"
-    g++ algorithms/$file -o bin/$bin -fopenmp -pthread
+    g++ $file -o bin/$bin -O3 -fopenmp -pthread
     for package in tests/*; do
         size=$(basename ${package%.*})
         echo -n "\t$size:\t"

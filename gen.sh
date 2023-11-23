@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-sizes="8 64 256 1024"
+sizes="1024 2048 4096"
 for size in $sizes; do
     echo -ne "$size:\t"
     for x in {0..0}
