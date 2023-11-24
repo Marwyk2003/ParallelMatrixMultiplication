@@ -15,14 +15,14 @@ int **alloc2d(int *M1, int size)
 
 void mult(int **A, int **B, int **C, int size)
 {
-#pragma omp parallel for
+#pragma omp parallel for collapse(2)
     for (int y = 0; y < size; ++y)
     {
         for (int x = 0; x < size; ++x)
         {
             int prod = 0;
             for (int k = 0; k < size; ++k)
-                prod += A[y][k] * B[k][x];
+                prod += A[y][k] * B[x][k];
             C[y][x] += prod;
         }
     }
@@ -49,12 +49,18 @@ int main()
             cin >> A[y][x];
     for (int y = 0; y < n; ++y)
         for (int x = 0; x < n; ++x)
-            cin >> B[y][x];
+            cin >> B[x][y];
 
     auto t1 = high_resolution_clock::now();
     omp_set_num_threads(THREAD_NUM);
 
-    mult(A, B, C, n);
+#pragma omp parallel
+    {
+#pragma omp single
+        {
+            mult(A, B, C, n);
+        }
+    }
 
     auto t2 = high_resolution_clock::now();
     duration<double, milli> time = t2 - t1;

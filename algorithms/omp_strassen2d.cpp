@@ -56,7 +56,7 @@ void strassen(int **A, int **B, int **C, int size)
     {
         int nsize = size / 2;
         const auto &[A11, A12, A21, A22] = partition(A, nsize);
-        const auto &[B11, B12, B21, B22] = partition(B, nsize);
+        const auto &[B11, B21, B12, B22] = partition(B, nsize); // partition will return B in mirrored order!
         const auto &[C11, C12, C21, C22] = partition(C, nsize);
 
 #pragma omp task
@@ -99,34 +99,20 @@ int main()
     while (p2 < n)
         p2 *= 2;
 
-    int *Aarr = new int[p2 * p2];
-    int *Barr = new int[p2 * p2];
-    int *Carr = new int[p2 * p2];
+    int *Aarr = new int[p2 * p2]{0};
+    int *Barr = new int[p2 * p2]{0};
+    int *Carr = new int[p2 * p2]{0};
 
     int **A = alloc2d(Aarr, p2);
     int **B = alloc2d(Barr, p2);
     int **C = alloc2d(Carr, p2);
 
     for (int y = 0; y < n; ++y)
-    {
         for (int x = 0; x < n; ++x)
             cin >> A[y][x];
-        for (int x = p2; x < p2; ++x)
-            A[y][x] = 0;
-    }
     for (int y = 0; y < n; ++y)
-    {
         for (int x = 0; x < n; ++x)
-            cin >> B[y][x];
-        for (int x = p2; x < p2; ++x)
-            B[y][x] = 0;
-    }
-    for (int y = n; y < p2; ++y)
-        for (int x = 0; x < p2; ++x)
-            A[y][x] = 0, B[y][x] = 0;
-    for (int y = 0; y < p2; ++y)
-        for (int x = 0; x < p2; ++x)
-            C[y][x] = 0;
+            cin >> B[x][y];
 
     auto t1 = high_resolution_clock::now();
     omp_set_num_threads(THREAD_NUM);

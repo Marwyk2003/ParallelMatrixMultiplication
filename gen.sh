@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
-sizes="1024 2048 4096"
-for size in $sizes; do
+sizes=("$@")
+for size in ${sizes[@]}; do
     echo -ne "$size:\t"
     for x in {0..0}
     do

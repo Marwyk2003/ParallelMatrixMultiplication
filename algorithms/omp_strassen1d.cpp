@@ -11,12 +11,12 @@ struct Matrix
     int offset2d;
     int bx, by;
 
-    void partition(Matrix &A11, Matrix &A12, Matrix &A21, Matrix &A22, int nsize)
+    tuple<Matrix, Matrix, Matrix, Matrix> partition(int s)
     {
-        A11 = {M, offset2d, bx, by};
-        A12 = {M, offset2d, bx + nsize, by};
-        A21 = {M, offset2d, bx, by + nsize};
-        A22 = {M, offset2d, bx + nsize, by + nsize};
+        return {{M, offset2d, bx, by},
+                {M, offset2d, bx + s, by},
+                {M, offset2d, bx, by + s},
+                {M, offset2d, bx + s, by + s}};
     }
 
     int &operator()(int x, int y)
@@ -36,7 +36,7 @@ void strassen(Matrix &A, Matrix &B, Matrix &C, int size)
             {
                 int prod = 0;
                 for (int k = 0; k < size; ++k)
-                    prod += A(k, y) * B(x, k);
+                    prod += A(k, y) * B(k, x);
                 C(x, y) += prod;
             }
         }
@@ -44,12 +44,9 @@ void strassen(Matrix &A, Matrix &B, Matrix &C, int size)
     else
     {
         int nsize = size / 2;
-        Matrix A11, A12, A21, A22;
-        A.partition(A11, A12, A21, A22, nsize);
-        Matrix B11, B12, B21, B22;
-        B.partition(B11, B12, B21, B22, nsize);
-        Matrix C11, C12, C21, C22;
-        C.partition(C11, C12, C21, C22, nsize);
+        auto [A11, A12, A21, A22] = A.partition(nsize);
+        auto [B11, B21, B12, B22] = B.partition(nsize); // partition will return B in mirrored order!
+        auto [C11, C12, C21, C22] = C.partition(nsize);
 
 #pragma omp task
         {
@@ -87,34 +84,16 @@ int main()
     while (p2 < n)
         p2 *= 2;
 
-    Matrix A{new int[p2 * p2], p2, 0, 0};
-    Matrix B{new int[p2 * p2], p2, 0, 0};
-    Matrix C{new int[p2 * p2], p2, 0, 0};
+    Matrix A{new int[p2 * p2]{0}, p2, 0, 0};
+    Matrix B{new int[p2 * p2]{0}, p2, 0, 0};
+    Matrix C{new int[p2 * p2]{0}, p2, 0, 0};
 
     for (int y = 0; y < n; ++y)
-    {
         for (int x = 0; x < n; ++x)
             cin >> A(x, y);
-        for (int x = p2; x < p2; ++x)
-            A(x, y) = 0;
-    }
     for (int y = 0; y < n; ++y)
-    {
         for (int x = 0; x < n; ++x)
-            cin >> B(x, y);
-        for (int x = p2; x < p2; ++x)
-            B(x, y) = 0;
-    }
-    for (int y = n; y < p2; ++y)
-    {
-        for (int x = 0; x < p2; ++x)
-            A(x, y) = 0, B(x, y) = 0;
-    }
-    for (int y = 0; y < p2; ++y)
-    {
-        for (int x = 0; x < p2; ++x)
-            C(x, y) = 0;
-    }
+            cin >> B(y, x);
 
     auto t1 = high_resolution_clock::now();
     omp_set_num_threads(THREAD_NUM);

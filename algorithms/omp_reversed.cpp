@@ -15,7 +15,7 @@ int **alloc2d(int *M1, int size)
 
 void mult(int **A, int **B, int **C, int size)
 {
-#pragma omp parallel for collapse(2)
+#pragma omp parallel for
     for (int y = 0; y < size; ++y)
     {
         for (int x = 0; x < size; ++x)
@@ -36,9 +36,9 @@ int main()
 
     int n;
     cin >> n;
-    int *Aarr = new int[n * n];
-    int *Barr = new int[n * n];
-    int *Carr = new int[n * n];
+    int *Aarr = new int[n * n]{0};
+    int *Barr = new int[n * n]{0};
+    int *Carr = new int[n * n]{0};
 
     int **A = alloc2d(Aarr, n);
     int **B = alloc2d(Barr, n);
@@ -50,20 +50,11 @@ int main()
     for (int y = 0; y < n; ++y)
         for (int x = 0; x < n; ++x)
             cin >> B[x][y];
-    for (int y = 0; y < n; ++y)
-        for (int x = 0; x < n; ++x)
-            C[y][x] = 0;
 
     auto t1 = high_resolution_clock::now();
     omp_set_num_threads(THREAD_NUM);
 
-#pragma omp parallel
-    {
-#pragma omp single
-        {
-            mult(A, B, C, p2);
-        }
-    }
+    mult(A, B, C, n);
 
     auto t2 = high_resolution_clock::now();
     duration<double, milli> time = t2 - t1;
