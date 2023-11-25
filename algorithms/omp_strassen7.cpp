@@ -37,7 +37,7 @@ tuple<int **, int **, int **, int **> partition(int **M, int s)
 
 void Add(int **A, int **B, int **C, int size)
 {
-#pragma omp parallel for collapse(2)
+#pragma omp parallel for
     for (int y = 0; y < size; ++y)
         for (int x = 0; x < size; ++x)
             C[y][x] = A[y][x] + B[x][y];
@@ -45,7 +45,7 @@ void Add(int **A, int **B, int **C, int size)
 
 void Sub(int **A, int **B, int **C, int size)
 {
-#pragma omp parallel for collapse(2)
+#pragma omp parallel for
     for (int y = 0; y < size; ++y)
         for (int x = 0; x < size; ++x)
             C[y][x] = A[y][x] - B[x][y];
@@ -185,22 +185,22 @@ void strassen(int **A, int **B, int **C, int size)
 #pragma omp taskwait
 
 // combine results
-#pragma omp parallel for collapse(2)
+#pragma omp parallel for
         for (int y = 0; y < nsize; ++y)
             for (int x = 0; x < nsize; ++x)
                 C11[y][x] = M1[y][x] + M4[y][x] - M5[y][x] + M7[y][x];
 
-#pragma omp parallel for collapse(2)
+#pragma omp parallel for
         for (int y = 0; y < nsize; ++y)
             for (int x = 0; x < nsize; ++x)
                 C12[y][x] = M3[y][x] + M5[y][x];
 
-#pragma omp parallel for collapse(2)
+#pragma omp parallel for
         for (int y = 0; y < nsize; ++y)
             for (int x = 0; x < nsize; ++x)
                 C21[y][x] = M2[y][x] + M4[y][x];
 
-#pragma omp parallel for collapse(2)
+#pragma omp parallel for
         for (int y = 0; y < nsize; ++y)
             for (int x = 0; x < nsize; ++x)
                 C22[y][x] = M1[y][x] - M2[y][x] + M3[y][x] + M6[y][x];

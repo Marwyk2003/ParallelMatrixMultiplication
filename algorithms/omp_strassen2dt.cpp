@@ -40,14 +40,14 @@ void strassen(int **A, int **B, int **C, int size)
 {
     if (size <= MIN_SIZE)
     {
-#pragma omp parallel for collapse(2)
+#pragma omp parallel for
         for (int y = 0; y < size; ++y)
         {
             for (int x = 0; x < size; ++x)
             {
                 int prod = 0;
                 for (int k = 0; k < size; ++k)
-                    prod += A[y][k] * B[k][x];
+                    prod += A[y][k] * B[x][k];
                 C[y][x] += prod;
             }
         }
@@ -56,7 +56,7 @@ void strassen(int **A, int **B, int **C, int size)
     {
         int nsize = size / 2;
         const auto &[A11, A12, A21, A22] = partition(A, nsize);
-        const auto &[B11, B12, B21, B22] = partition(B, nsize); // partition will return B in mirrored order!
+        const auto &[B11, B21, B12, B22] = partition(B, nsize); // partition will return B in mirrored order!
         const auto &[C11, C12, C21, C22] = partition(C, nsize);
 
 #pragma omp task
@@ -112,7 +112,7 @@ int main()
             cin >> A[y][x];
     for (int y = 0; y < n; ++y)
         for (int x = 0; x < n; ++x)
-            cin >> B[y][x];
+            cin >> B[x][y];
 
     auto t1 = high_resolution_clock::now();
     omp_set_num_threads(THREAD_NUM);

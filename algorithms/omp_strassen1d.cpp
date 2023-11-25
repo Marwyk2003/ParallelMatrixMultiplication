@@ -29,7 +29,7 @@ void strassen(Matrix &A, Matrix &B, Matrix &C, int size)
 {
     if (size <= MIN_SIZE)
     {
-#pragma omp parallel for collapse(2)
+#pragma omp parallel for
         for (int y = 0; y < size; ++y)
         {
             for (int x = 0; x < size; ++x)
@@ -48,22 +48,22 @@ void strassen(Matrix &A, Matrix &B, Matrix &C, int size)
         auto [B11, B21, B12, B22] = B.partition(nsize); // partition will return B in mirrored order!
         auto [C11, C12, C21, C22] = C.partition(nsize);
 
-#pragma omp task
+#pragma omp task shared(A11, B11, A12, B21, C11)
         {
             strassen(A11, B11, C11, nsize);
             strassen(A12, B21, C11, nsize);
         }
-#pragma omp task
+#pragma omp task shared(A11, B12, A12, B22, C11)
         {
             strassen(A11, B12, C12, nsize);
             strassen(A12, B22, C12, nsize);
         }
-#pragma omp task
+#pragma omp task shared(A21, B11, A22, B21, C11)
         {
             strassen(A21, B11, C21, nsize);
             strassen(A22, B21, C21, nsize);
         }
-#pragma omp task
+#pragma omp task shared(A22, B12, A22, B22, C11)
         {
             strassen(A21, B12, C22, nsize);
             strassen(A22, B22, C22, nsize);
