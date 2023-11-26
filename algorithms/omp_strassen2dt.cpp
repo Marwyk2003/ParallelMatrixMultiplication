@@ -129,11 +129,14 @@ int main()
     duration<double, milli> time = t2 - t1;
     cerr << time.count() << '\n';
 
-    for (int y = 0; y < n; ++y)
+    if (PRINT_OUT)
     {
-        for (int x = 0; x < n; ++x)
-            cout << C[y][x] << ' ';
-        cout << '\n';
+        for (int y = 0; y < n; ++y)
+        {
+            for (int x = 0; x < n; ++x)
+                cout << C[y][x] << ' ';
+            cout << '\n';
+        }
     }
 
     delete[] A;

@@ -63,7 +63,7 @@ void strassen(Matrix &A, Matrix &B, Matrix &C, int size)
             strassen(A21, B11, C21, nsize);
             strassen(A22, B21, C21, nsize);
         }
-#pragma omp task shared(A22, B12, A22, B22, C11)
+#pragma omp task shared(A21, B12, A22, B22, C11)
         {
             strassen(A21, B12, C22, nsize);
             strassen(A22, B22, C22, nsize);
@@ -110,11 +110,14 @@ int main()
     duration<double, std::milli> time = t2 - t1;
     cerr << time.count() << '\n';
 
-    for (int y = 0; y < n; ++y)
+    if (PRINT_OUT)
     {
-        for (int x = 0; x < n; ++x)
-            cout << C(x, y) << ' ';
-        cout << '\n';
+        for (int y = 0; y < n; ++y)
+        {
+            for (int x = 0; x < n; ++x)
+                cout << C(x, y) << ' ';
+            cout << '\n';
+        }
     }
 
     delete[] A.M;

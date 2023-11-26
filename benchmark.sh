@@ -23,6 +23,9 @@ for file in ${files[@]}; do
             ti=$(basename ${test%.*})
             echo -n "$ti "
             mkdir -p out/$bin/ time/$bin/
+            if [ -s "time/$bin/${size}_$ti.txt" ]; then
+                continue
+            fi
             ./bin/$bin <$test >"out/$bin/${size}_$ti.out" 2>"time/$bin/${size}_$ti.txt"
         done
         echo -e "\tdone"

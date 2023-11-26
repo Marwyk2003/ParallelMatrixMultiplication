@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from matplotlib import pyplot as plt
 import numpy as np
 import re
@@ -14,7 +16,11 @@ for algo in os.listdir('time'):
         if size not in benchmark[algo]:
             benchmark[algo][size] = []
         with open(path, 'r') as f:
-            res = float(f.readline().strip('\n'))
+            try:
+                res = float(f.readline().strip('\n'))
+            except:
+                print(path)
+                continue
             benchmark[algo][size] += [res]
 
 for algo in benchmark.keys():
@@ -33,19 +39,24 @@ def plot(size, algorithms, colors):
     ax.legend()
 
 
-size = 4096
-n_colors = ['blue', 'green', 'purple', 'brown',  'yellow']
-s_colors = ['orange', 'red', 'pink', 'grey', 'violet']
-a_colors = n_colors+s_colors
+n_colors = ['blue', 'green', 'brown', 'purple',  'violet']
+s_colors = ['pink', 'yellow', 'gray', 'red', 'orange']
+f_colors = ['blue', 'red', 'orange']
 
-naive = ['omp_naive', 'omp_collapse',
-         'omp_reversed', 'mpi_naive2d', 'mpi_naive1d']
+naive = ['omp_naive', 'omp_collapsed',
+         'omp_transposed', 'mpi_naive2d', 'mpi_naive1d']
 strassen = ['mpi_strassen', 'omp_strassen1d', 'omp_strassen2d',
             'omp_strassen2dt', 'omp_strassen7']
-all_algo = naive+strassen
-plot(size, naive, n_colors)
-plot(size, strassen, s_colors)
-plot(size, all_algo, a_colors)
+final = ['omp_transposed', 'omp_strassen2dt', 'omp_strassen7']
+
+plot(1024, naive, n_colors)
+plot(4096, naive, n_colors)
+
+plot(1024, strassen, s_colors)
+plot(4096, strassen, s_colors)
+
+plot(1024, final, f_colors)
+plot(16384, final, f_colors)
 
 
 plt.show()

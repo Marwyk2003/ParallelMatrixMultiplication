@@ -44,10 +44,13 @@ int main()
     duration<double, std::milli> time = t2 - t1;
     cerr << time.count() << '\n';
 
-    for (int i = 0; i < n; ++i)
+    if (PRINT_OUT)
     {
-        for (int j = 0; j < n; ++j)
-            cout << C[i * n + j] << ' ';
-        cout << '\n';
+        for (int i = 0; i < n; ++i)
+        {
+            for (int j = 0; j < n; ++j)
+                cout << C[i * n + j] << ' ';
+            cout << '\n';
+        }
     }
 }
